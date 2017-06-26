@@ -20,21 +20,23 @@ def ThreadEnvio():
                 print 'Gerente desconectado'
                 continue
 
-        print rcv 
+        if rcv == 'acc':
+            print 'Conectado ao gerente'
 
         if rcv == 'atk':
-            if(ATACANDO == True):
+            if ATACANDO == True:
                 print  'ja estou atacando'
-            #execfile(Ataque.py)
-            ATACANDO = True
+            else:
+                print 'Iniciando ataque'
+                #execfile(Ataque.py)
+                ATACANDO = True
 
         if rcv == 'stp':
             if(ATACANDO == False):
                 print 'nao estou atacando'
-            ATACANDO = False
-
-        if rcv == 'acc':
-            print 'Conectado ao gerente'
+            else:
+                print 'Parando ataque'
+                ATACANDO = False
 
         if rcv == 'rem':
             raise SystemExit
@@ -50,7 +52,7 @@ try:
         thread.join(1)
 
 except KeyboardInterrupt, SystemExit:
-    print 'fim'
+    print 'Saindo...'
     clientSocket.sendto('off'+gethostname(), (serverName, serverPort))       
 
     exit(0)
